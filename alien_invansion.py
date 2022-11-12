@@ -31,7 +31,9 @@ class AlienInvasion:
             self._check_events()
             self.ship.update()
             self.bullets.update()
+            self._update_bullets()
             self._update_screen()
+
 
     def _check_events(self):
         """Respond to key presses and mouse events"""
@@ -65,10 +67,22 @@ class AlienInvasion:
             
     def _fire_bullet(self):
          """ Create a new bullet and add it to the bullets group. """
-         new_bullet = Bullet(self)
-         self.bullets.add(new_bullet)
+         if len(self.bullets) < self.settings.bullets_allowed:
+            new_bullet = Bullet(self)
+            self.bullets.add(new_bullet)
+            
+    def _update_bullets(self):
+        """ Update the position of bullets and get rid of old bullets """
+        
+        # Updates bullet position
+        self.bullets.update()
+        
+        # Get rid of bullets that that disappeared
+        for bullet in self.bullets.copy():
+            if bullet.rect.bottom <= 0:
+                self.bullets.remove(bullet)
+                print(len(self.bullets))
              
-                
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen."""
         # Redraw the screen during each pass through the loop.
