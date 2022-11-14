@@ -1,7 +1,9 @@
 import sys
+from time import Sleep
 import pygame
 
 from settings import Settings
+from game_stats import GameStats
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
@@ -19,6 +21,9 @@ class AlienInvasion:
             # Passing in from settings
             (self.settings.screen_width, self.settings.screen_height))
         pygame.display.set_caption("Alien Invasion")
+        
+        # Create an instance to store game statistics
+        self.stats = GameStats(self)
         
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
@@ -55,10 +60,13 @@ class AlienInvasion:
         if event.key == pygame.K_RIGHT:
             # Move the ship to the right
             self.ship.moving_right = True
+            # Move the ship to the left
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
+            # Quit the game with 'q'
         elif event.key == pygame.K_q:
             sys.exit()
+            # Space bar to fire bullets
         elif event.key == pygame.K_SPACE:
             self._fire_bullet()
           
@@ -123,6 +131,10 @@ class AlienInvasion:
         self._check_fleet_edges()
         """ Update the positions of all aliens in the fleet. """
         self.aliens.update()
+        
+        # Look for alien_ship collisions.
+        if pygame.sprite.spritecollideany(self.ship, self.aliens):
+            print("Ship hit!!!")
             
     def _fire_bullet(self):
          """ Create a new bullet and add it to the bullets group. """
@@ -139,16 +151,20 @@ class AlienInvasion:
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
-                
+        
+        self._check_bullet_alien_collisions()
+        
+    def _check_bullet_alien_collisions(self):
+            """ Respond to bullet-alien collisions"""        
         # Check for any bullets that have hit aliens
         # If so get rid of the bullet and the alien.
         
-        collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+            collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
         
-        if not self.aliens:
-            #Destroy existing bullets and create new fleet
-            self.bullets.empty()
-            self._create_fleet()
+            if not self.aliens:
+                #Destroy existing bullets and create new fleet
+                self.bullets.empty()
+                self._create_fleet()
              
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen."""
